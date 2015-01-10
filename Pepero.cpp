@@ -16,12 +16,12 @@ SDL_Renderer* renderer = nullptr;
 class Ball
 {
 public:
-  static const int bRadius = 10;
+  static const int bRadius = 2;
   int bPosX, bPosY;
   int velX, velY;
 
   Ball();
-  void collisionDetection(Ball* );
+  void collisionDetection(Ball& );
   double distanceSquared( int , int , int , int  );
   void render();
   void move();
@@ -32,7 +32,7 @@ public:
 class BallGroup
 {
   public:
-   static const int ballAmount = 50;
+   static const int ballAmount = 10;
    std::vector<Ball> BallGroupContainer;
 
    BallGroup();
@@ -56,14 +56,27 @@ Ball::Ball()
 }
 
 
-void Ball::collisionDetection(Ball* otherBall)
+void Ball::collisionDetection(Ball& otherBall)
 {
-  int totalRadiusSquared = this->bRadius + otherBall->bRadius;
+  int totalRadiusSquared = this->bRadius + otherBall.bRadius;
   totalRadiusSquared *= totalRadiusSquared;
 
-  if(distanceSquared(this->bPosX, this->bPosY, otherBall->bPosX, otherBall->bPosY) < totalRadiusSquared)
+  if(distanceSquared(this->bPosX, this->bPosY, otherBall.bPosX, otherBall.bPosY) < totalRadiusSquared)
   {
+    if(this->bPosX == otherBall.bPosX)
+    {
+        this->velY *= -1;
+    }
+    else if (this->bPosY == otherBall.bPosY)
+    {
+        this->velX *= -1;
+    }
+    else
+    {
+        this->velX *= -1;
+        this->velY *= -1;
 
+    }
   }
 
 }
@@ -116,6 +129,11 @@ void BallGroup::render(){
 }
 
 void BallGroup::collisionDetection(){
+    for (auto &pCircle : BallGroupContainer){
+        for (auto &tCircle : BallGroupContainer){
+            pCircle.collisionDetection(tCircle);
+        }
+    }
 }
 
 BallGroup::~BallGroup(){}
@@ -195,6 +213,7 @@ int main(int argc, char* args[])
     while(!quit)
     {
       uint capTimer = SDL_GetTicks();
+      //lol.collisionDetection();
       lol.move();
       while(SDL_PollEvent(&e) != 0)
       {
