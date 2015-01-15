@@ -7,56 +7,18 @@
 
 #include "Tools.h"
 
-bool Tools::isTop(Sprite const &sprite) {
-	return sprite.getPosition().y <= sprite.getGlobalBounds().height / 2;
+bool Tools::isTop(FloatRect  const& object, const unsigned short & top) {return object.top <= top;}
+
+bool Tools::isLeft(const FloatRect& object, const unsigned short & left) {return object.left <= left;}
+
+bool Tools::isBottom(const FloatRect& object, const unsigned short & height) {
+	return object.top + object.width >= height;
+}
+bool Tools::isRight(const FloatRect& object, const unsigned short & width) {
+	return object.left + object .width >= width;
 }
 
-bool Tools::isLeft(Sprite const &sprite){
-	return sprite.getPosition().x <= sprite.getGlobalBounds().width / 2;
+bool Tools::isOutside(const FloatRect& object, const unsigned short & width, const unsigned short & height,
+						 const unsigned short & top,	const unsigned short & left) {
+	return isTop(object, top) || isLeft(object, left) || isRight(object, width) || isBottom(object, height);
 }
-
-bool Tools::isBottom(Sprite const &sprite, RenderWindow const &window){
-	return sprite.getPosition().y >= window.getSize().y - sprite.getGlobalBounds().height / 2;
-}
-
-bool Tools::isRight(Sprite const &sprite, RenderWindow const &window){
-	return sprite.getPosition().x >= window.getSize().x - sprite.getGlobalBounds().width / 2;
-}
-
-bool Tools::isOutside(Sprite const &sprite, RenderWindow const &window){
-	return isTop(sprite) || isLeft(sprite) ||  isBottom(sprite, window) || isRight(sprite, window);
-}
-
-float Tools::norm(Vector2f a, Vector2f b) {
-	float x = b.x - a.y;
-	float y = b.y - a.y;
-
-	return (float) sqrt(x*x + y*y);
-}
-
-Vector2f Tools::vectorFromAngle(int angle) {
-	Vector2f vector;
-	angle = angle % 360;
-
-	vector.x = cos(angle);
-	vector.y =  -sin(angle);
-
-	return vector;
-}
-
-bool Tools::isTop(Shape const &shape, unsigned int const top) {
-	return shape.getPosition().y  - shape.getGlobalBounds().height / 2 <= top ;
-}
-
-bool Tools::isBottom(Shape const &shape, unsigned int const bottom) {
-	return shape.getPosition().y  + shape.getGlobalBounds().height / 2 >= bottom;
-}
-
-bool Tools::isLeft(Shape const &shape, unsigned int const left) {
-	return shape.getPosition().x  - shape.getGlobalBounds().width / 2 <= left;
-}
-
-bool Tools::isRight(Shape const &shape, unsigned int const right) {
-	return shape.getPosition().x  + shape.getGlobalBounds().width / 2 >= right;
-}
-

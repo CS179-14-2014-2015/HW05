@@ -9,19 +9,37 @@
 #define BALL_H_
 
 #include "SFML/Graphics.hpp"
-#include <list>
+
+#include "Vector2D.h"
 
 using namespace sf;
+using namespace std;
+
 
 class Ball : public CircleShape {
 
 protected:
-	unsigned int mass;	//the mass of the ball
-	float xSpeed;		//the x component of the ball's speed
-	float ySpeed;		//the y component of the ball's speed
+	unsigned short mass;	//mass of the ball
+	Vector2Df speed;		//speed of the ball
 
 public:
-	Ball(const unsigned int width, const unsigned int height);
-	void update(const unsigned int width, const unsigned int height);
+	//Constructor : need the screen dimensions to center it
+	Ball(unsigned int const& width,  unsigned int const& height);
+
+	//function that update the position of the ball and handle border collisions.
+	void update(const unsigned int &width, const unsigned int &height);
+
+	//handle the elastic collision with the other balls
+	void collide(Ball &ball, bool const colorSwap);
+	bool isColliding(Ball const& ball) const;
+
+	//used to know if an iterator is pointing at the ball
+	bool isEqual(Ball const& ball)const;
+
+	//getters & setters
+	unsigned short getMass() const;
+	Vector2Df& getSpeed();
+	Ball& setSpeed(Vector2Df speed);
 };
+
 #endif /* BALL_H_ */
