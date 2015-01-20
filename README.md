@@ -5,6 +5,7 @@ The balls just stick because they lose velocity after collision.
 ## Homework submission reference
 ### For ball after-collision velocities:
 version 1 : http://www.vobarian.com/collisions/2dcollisions2.pdf
+
 version 2 : http://www.gamasutra.com/view/feature/131424/pool_hall_lessons_fast_accurate_.php?page=3
 
 
