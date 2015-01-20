@@ -8,3 +8,8 @@ Write a "boncing balls" simulation:
 4. No restriction on the mass of the balls (you can make them uniform to keep things simple).
 5. Initial random direction for all balls (should not be locked to 45 degree velocities).
 6. Should be able to handle at least 50 balls at 60 fps.
+
+
+---------------------------------------------------
+
+This program requires SDL2 and SDL2_gfxPrimitives
