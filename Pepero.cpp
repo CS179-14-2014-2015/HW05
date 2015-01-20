@@ -17,9 +17,9 @@ class Ball
  public:
 
   // Ball dimensions
-  int bRadius = 30;
-  int bMass = 10;// in grams
-  int bPosX, bPosY;
+  double bRadius = 10;
+  double bMass = 10;
+  double bPosX, bPosY;
   int velX, velY;
 
   // Unique ID
@@ -43,9 +43,6 @@ class Ball
     // Collision Points
     int collisionX;
     int collisionY;
-    // Collision Velocity Holder
-    int newVelX = 0;
-    int newVelY = 0;
     // colorsssss
     int red = rand() % 255;
     int green = rand() % 255;
@@ -58,7 +55,7 @@ int Ball::newUID = 0;
 class BallGroup
 {
   public:
-   static const int ballAmount = 10;
+   static const int ballAmount = 50;
    std::vector<Ball> BallGroupContainer;
 
    BallGroup();
@@ -77,8 +74,8 @@ Ball::Ball(): uid(newUID++)
   bPosY = rand() % int(SCREEN_HEIGHT/1.5) + bRadius;
 
 // Velocity
-  velX = rand() % 9 + 1;
-  velY = rand() % 9 + 1;
+  velX = rand() % 20 + 1;
+  velY = rand() % 10 + 1;
 }
 
 void Ball::checkBallBoundaries(Ball& otherBall)
@@ -113,91 +110,117 @@ void Ball::collisionDetection(Ball& otherBall)
 
    if(distance(this->bPosX, this->bPosY, otherBall.bPosX, otherBall.bPosY) < totalRadius)
    {
-     this->determineCollisionPoint(otherBall);
 
-     // Compute for vector of ball collision
-     double vn_x = this->bPosX - otherBall.bPosX;
-     double vn_y = this->bPosY - otherBall.bPosY;
-     double vn_mag = std::sqrt(vn_x * vn_x + vn_y * vn_y);
+     /// Computations for "nudging" of colliding balls
+     // Computing for vectors and magnitude of this-otherBall (A-B) and otherBall-this (B-A)
+     double AB_x = this->bPosX - otherBall.bPosX;
+     double AB_y = this->bPosY - otherBall.bPosY;
+     double BA_x = otherBall.bPosX - this->bPosX;
+     double BA_y = otherBall.bPosY - this->bPosY;
+     double AB_mag = std::sqrt(AB_x * AB_x + AB_y * AB_y);
+     double BA_mag = std::sqrt(BA_x * BA_x + BA_y * BA_y);
 
-     // Compute for unit vector
-     double uv_x = vn_x / vn_mag;
-     double uv_y = vn_y / vn_mag;
+     // Computing for the unit vectors of AB and BA
+     double uAB_x = AB_x / AB_mag;
+     double uAB_y = AB_y / AB_mag;
+     double uBA_x = BA_x / BA_mag;
+     double uBA_y = BA_y / BA_mag;
+
+     // Computing for scalar projection
+     double sAB = (2 * this->bRadius - AB_mag) / 2 ;
+     // Scale unit vectors
+     double nAB_x = uAB_x * sAB;
+     double nAB_y = uAB_y * sAB;
+     double nBA_x = uBA_x * sAB;
+     double nBA_y = uBA_y * sAB;
+
+     // Displace balls
+     this->bPosX += nAB_x;
+     this->bPosY += (nAB_y);
+     otherBall.bPosX += (nBA_x);
+     otherBall.bPosY += (nBA_y);
+
+//     /// Calculations for getting the resulting velocities after elastic collision Version 2
+//     // Compute for the normal vector (OtherBall - this)
+//     double nv_x = otherBall.bPosX - this->bPosX;
+//     double nv_y = otherBall.bPosY - this->bPosY;
+//     double nv_mag = std::sqrt((nv_x * nv_x) + (nv_y * nv_y));
+//
+//     // Compute for the unit normal vector
+//     double unv_x = nv_x / nv_mag;
+//     double unv_y = nv_y / nv_mag;
+//
+//     // Create initial velocity vectors
+//     double iv1_x = this->velX;
+//     double iv1_y = this->velY;
+//     double iv2_x = otherBall.velX;
+//     double iv2_y = otherBall.velY;
+//
+//     // Resolving velocity vectors to normal and tangential unit vectors through dot product
+//     double v1n = unv_x * iv1_x + unv_y * iv1_y;
+//     double v2n = unv_x * iv2_x + unv_y * iv2_y;
+//
+//     // computing for new velocities
+//     double newV1_x = this->velX - (2 * (v1n - v2n) / (this->bMass + otherBall.bMass)) * otherBall.bMass * unv_x;
+//     double newV1_y = this->velY - (2 * (v1n - v2n) / (this->bMass + otherBall.bMass)) * otherBall.bMass * unv_y;
+//     double newV2_x = otherBall.velX + (2 * (v1n - v2n) / (this->bMass + otherBall.bMass)) * this->bMass * unv_x;
+//     double newV2_y = otherBall.velY + (2 * (v1n - v2n) / (this->bMass + otherBall.bMass)) * this->bMass * unv_y;
+//
+//     this->velX = newV1_x;
+//     this->velY = newV1_y;
+//     otherBall.velX = newV2_x;
+//     otherBall.velY = newV2_y;
+
+     /// Calculations for getting the resulting velocities after elastic collision Version 1
+     // Compute for the normal vector (OtherBall - this)
+     double nv_x = otherBall.bPosX - this->bPosX;
+     double nv_y = otherBall.bPosY - this->bPosY;
+     double nv_mag = std::sqrt((nv_x * nv_x) + (nv_y * nv_y));
+
+     // Compute for the unit normal vector
+     double unv_x = nv_x / nv_mag;
+     double unv_y = nv_y / nv_mag;
 
      // Compute for unit tangent
-     double ut_x = -vn_y / vn_mag;
-     double ut_y = vn_x / vn_mag;
+     double utv_x = -unv_y;
+     double utv_y = unv_x;
 
-     // Compute scalar projections of velocities unto uv and ut
-      // Normal vector
-     double v1n_x = uv_x * this->velX;
-     double v1n_y = uv_y * this->velY;
-     double v2n_x = uv_x * otherBall.velX;
-     double v2n_y = uv_y * otherBall.velY;
-      // Tangential Vector
-     double v1t_x = ut_x * this->velX;
-     double v1t_y = ut_y * this->velY;
-     double v2t_x = ut_x * otherBall.velX;
-     double v2t_y = ut_y * otherBall.velY;
+     // Create initial velocity vectors
+     double iv1_x = this->velX;
+     double iv1_y = this->velY;
+     double iv2_x = otherBall.velX;
+     double iv2_y = otherBall.velY;
 
-     // Compute new tangential velocity
-     double v1tPrime_x = v1t_x;
-     double v1tPrime_y = v1t_y;
-     double v2tPrime_x = v2t_x;
-     double v2tPrime_y = v2t_y;
+     // Resolving velocity vectors to normal and tangential unit vectors through dot product
+     double v1n = unv_x * iv1_x + unv_y * iv1_y;
+     double v2n = unv_x * iv2_x + unv_y * iv2_y;
+     double v1t = utv_x * iv1_x + utv_y * iv1_y;
+     double v2t = utv_x * iv2_x + utv_y * iv2_y;
 
-     // Compute new normal velocities using elasticity equations in normal direction
-     double v1nPrime_x = (v1n_x * (this->bMass - otherBall.bMass) + 2. * otherBall.bMass * v2n_x) / (this->bMass * otherBall.bMass);
-     double v1nPrime_y = (v1n_y * (this->bMass - otherBall.bMass) + 2. * otherBall.bMass * v2n_y) / (this->bMass * otherBall.bMass);
-     double v2nPrime_x = (v2n_x * (otherBall.bMass - this->bMass) + 2. * this->bMass * v1n_x) / (this->bMass * otherBall.bMass);
-     double v2nPrime_y = (v2n_y * (otherBall.bMass - this->bMass) + 2. * this->bMass * v1n_y) / (this->bMass * otherBall.bMass);
+     // Find the new tangential velocities (after collision)
+     double vp1t = v1t;
+     double vp2t = v2t;
 
-     // Compute new normal and tangential velocity vectors
-     double v_v1nPrime_x = v1nPrime_x * uv_x;
-     double v_v1nPrime_y = v1nPrime_y * uv_y;
-     double v_v2nPrime_x = v2nPrime_x * uv_x;
-     double v_v2nPrime_y = v2nPrime_y * uv_y;
+     // Find the new normal velocities after collision)
+     double vp1n = (v1n * (this->bMass - otherBall.bMass) + (2 * otherBall.bMass * v2n)) / (this->bMass + otherBall.bMass);
+     double vp2n = (v2n * (otherBall.bMass - this->bMass) + (2 * this->bMass * v1n)) / (this->bMass + otherBall.bMass);
 
-     double v_v1tPrime_x = v1tPrime_x * ut_x;
-     double v_v1tPrime_y = v1tPrime_y * ut_y;
-     double v_v2tPrime_x = v2tPrime_x * ut_x;
-     double v_v2tPrime_y = v2tPrime_y * ut_y;
+     // Convert scalar normal and tangential velocities into vectors
+     double v_vp1n_x = vp1n * unv_x;
+     double v_vp1n_y = vp1n * unv_y;
+     double v_vp2n_x = vp2n * unv_x;
+     double v_vp2n_y = vp2n * unv_y;
 
-     // Set new velocities
-     this->velX = v_v1nPrime_x + v_v1tPrime_x;
-     this->velY = v_v1nPrime_y + v_v1tPrime_y;
-     otherBall.velX = v_v2nPrime_x + v_v2tPrime_x;
-     otherBall.velY = v_v2nPrime_y + v_v2tPrime_y;
+     double v_vp1t_x = vp1t * utv_x;
+     double v_vp1t_y = vp1t * utv_y;
+     double v_vp2t_x = vp2t * utv_x;
+     double v_vp2t_y = vp2t * utv_y;
 
-     // Adjust positions
-     this->bPosX += this->velX;
-     this->bPosY += this->velY;
-     otherBall.bPosX += otherBall.velX;
-     otherBall.bPosY += otherBall.velY;
-
-     // Determine new velocities
-//     this->newVelX = (this->velX * (this->bMass - otherBall.bMass) + (2 * otherBall.bMass * otherBall.velX)) / (this->bMass + otherBall.bMass);
-//     this->newVelY = (this->velY * (this->bMass - otherBall.bMass) + (2 * otherBall.bMass * otherBall.velY)) / (this->bMass + otherBall.bMass);
-//     otherBall.newVelX = (otherBall.velX * (otherBall.bMass - this->bMass) + (2 * this->bMass * this->velX)) / (this->bMass + otherBall.bMass);
-//     otherBall.newVelY = (otherBall.velY * (otherBall.bMass - this->bMass) + (2 * this->bMass * this->velY)) / (this->bMass + otherBall.bMass);
-//her
-//     // Adjust ball positions
-//     this->bPosX += this->newVelX;
-//     this->bPosY += this->newVelY;
-//     otherBall.bPosX += otherBall.newVelX;
-//     otherBall.bPosY += otherBall.newVelY;
-//
-//     // Adjust speed
-//     this->velX = this->newVelX;
-//     this->velY = this->newVelY;
-//     otherBall.velX = otherBall.newVelX;
-//     otherBall.velY = otherBall.newVelY;
-//
-//     // Reset velocity holders
-//     this->newVelX = 0;
-//     this->newVelY = 0;
-//     otherBall.newVelX = 0;
-//     otherBall.newVelY = 0;
+     // Find the final velocities through the sum of normal and tangential velocities
+     this->velX = v_vp2n_x + v_vp2t_x;
+     this->velY = v_vp2n_y + v_vp2t_y;
+     otherBall.velX = v_vp1n_x + v_vp1t_x;
+     otherBall.velY = v_vp1n_y + v_vp1t_y;
    }
   }
 }
@@ -220,23 +243,23 @@ void Ball::move(){
   if (bPosX <= 0+bRadius)
   {
     this->bPosX = bRadius;
-    velX *= -1;
+    velX = std::fabs(velX);
   }
-  if  (bPosX >= SCREEN_WIDTH-bRadius)
+  else if  (bPosX >= SCREEN_WIDTH-bRadius)
   {
     this->bPosX = SCREEN_WIDTH-bRadius;
-    velX *= -1;
+    velX = -std::fabs(velX);
   }
 
-  if (bPosY <= 0+bRadius)
+  else if (bPosY <= 0+bRadius)
   {
     this->bPosY = bRadius;
-    velY *= -1;
+    velY = std::fabs(velY);
   }
-  if (bPosY >= SCREEN_HEIGHT-bRadius)
+  else if (bPosY >= SCREEN_HEIGHT-bRadius)
   {
     this->bPosY = SCREEN_HEIGHT-bRadius;
-    velY *= -1;
+    velY = -std::fabs(velY);
   }
   bPosX += velX;
   bPosY += velY;
@@ -369,7 +392,7 @@ int main(int argc, char* args[])
       lol.render();
       // Render other objects
       SDL_RenderPresent(renderer);
-      SDL_Delay(200);
+      //SDL_Delay(200);
     }
   }
   close();
