@@ -8,9 +8,6 @@
 
 using namespace std;
 
-//If damaged by asteroids, there is an invuln period of 2 seconds
-
-//NOT SUPPOSED TO CHANGE, GAME GOES BONKERS
 const int FRAMERATE = 60;
 const double FRAME_TIME = 1000/FRAMERATE;
 const float PI = 3.14159265;
@@ -22,10 +19,6 @@ int ballSpeed = 5;
 int radius = 20;
 int maxBalls = 50;
 
-
-//it will take windowHeight/bulletSpeed frames for the bullet to traverse the screen
-//in a second, a bullet travels bulletspeed*FRAMERATE pixels
-//we need the last bullet for each wave to be bulletspeed*FRAMERATE*7 pixels above the top border of the screen
 
 struct ball {
 	int x,y;
@@ -61,8 +54,8 @@ void ballInit()
 		balls[i].x = spawnRadius * cos(anglePiece*i) + (windowWidth/2);
 		balls[i].y = spawnRadius * sin(anglePiece*i) + (windowHeight/2);
 		float direction = (2*PI)*fRand();
-		balls[i].vx = signGen()*ballSpeed*cos(direction);
-		balls[i].vy = signGen()*ballSpeed*sin(direction);
+		balls[i].vx = ballSpeed*cos(direction);
+		balls[i].vy = ballSpeed*sin(direction);
 		balls[i].color = 0xFF000000 | rand() << 16 | rand();
 	}
 }
@@ -115,11 +108,8 @@ void checkCollision()
 				const float mag = sqrt(mag2);
 				const float ndx = dx/mag, ndy = dy/mag;
 
-				//int tempx = balls[j].x, tempy = balls[j].y;
 				balls[j].x = (minD + 0.00000) * ndx + balls[i].x;
 				balls[j].y = (minD + 0.00000) * ndy + balls[i].y;
-				//balls[i].x = (minD + 0.00000) * ndx + tempx;
-				//balls[i].y = (minD + 0.00000) * ndy + tempy;
 			
 				const float proj = -2 * (ndx * balls[j].vx + ndy * balls[j].vy);
 				const float proj2 = -2 * (ndx * balls[i].vx + ndy * balls[i].vy);
@@ -157,36 +147,9 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	/*SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC, 720, 720);
-	if (tex == nullptr){
-		std::cout << "SDL_CreateTexture Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-		return 1;
-	}*/
-
-
-	//TEXTURE CREATION HOLLAAAA
-	/*SDL_Surface *ship = SDL_LoadBMP("Ship.bmp");
-	SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, ship);
-	SDL_FreeSurface(ship);
-
-	SDL_Surface *damShip = SDL_LoadBMP("damShip.bmp");
-	SDL_Texture *damTex = SDL_CreateTextureFromSurface(ren, damShip);
-	SDL_FreeSurface(damShip);
-
-	SDL_Surface *rocks = SDL_LoadBMP("ROCKS.bmp");
-	SDL_Texture *ast = SDL_CreateTextureFromSurface(ren, rocks);
-	SDL_FreeSurface(rocks);
-
-	SDL_Surface *winScreen = SDL_LoadBMP("winscreen.bmp");
-	SDL_Texture *winScreenTex = SDL_CreateTextureFromSurface(ren, winScreen);
-	SDL_FreeSurface(winScreen);*/
-
 	bool running = true;
 
 	int frameNo = 0;
-
-	//Uint32 color1 = 0xFF777744, color2 = 0xFF334455;
 	
 	SDL_ShowCursor(1);
 	
@@ -204,6 +167,7 @@ int main(int argc, char* argv[]) {
 		
 		advanceBalls();
 		checkCollision();
+
 		//DRAW
 		for (int i = 0; i < maxBalls; i++)
 		{
@@ -225,7 +189,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	//SDL_DestroyTexture(tex);
 	SDL_DestroyRenderer(ren);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
